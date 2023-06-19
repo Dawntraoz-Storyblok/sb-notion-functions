@@ -3,23 +3,31 @@ const { Client } = require("@notionhq/client")
 exports.handler = async function (event, context) {
   const notionClient = new Client({ auth: process.env.NOTION_NMDLV_KEY });
 
-  const notesProdPage = (await notionClient.blocks.children.list({
-    block_id: process.env.NOTION_NMDLV_ID,
-    page_size: 50,
-  })).results;
+  let notesProdPage = [];
+  try {
+    notesProdPage = (await notionClient.blocks.children.list({
+      block_id: process.env.NOTION_NMDLV_ID,
+      page_size: 50,
+    })).results;
+  } catch (error) {
+    console.error(error);
+  }
   const podcastSeasons = notesProdPage.filter(block => block.callout);
 
-  const episodeNotes = {};
-
+  let episodeNotes = {};
   podcastSeasons.map(async version => {
-    const episodeNotesByVersion = await notionClient.blocks.children.list({
-      block_id: version.id,
-      page_size: 50,
-    });
-    episodeNotes[version.callout.rich_text] = episodeNotesByVersion.results.map(episode => ({
-      notion_id: episode.id,
-      title: episode.child_page.title
-    }));
+    try {
+      const episodeNotesByVersion = await notionClient.blocks.children.list({
+        block_id: version.id,
+        page_size: 50,
+      });
+      episodeNotes[version.callout.rich_text] = episodeNotesByVersion.results.map(episode => ({
+        notion_id: episode.id,
+        title: episode.child_page.title
+      }));
+    } catch (error) {
+      console.error(error);
+    }
   })
 
   return {
