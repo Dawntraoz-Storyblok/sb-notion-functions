@@ -1,9 +1,9 @@
 const { Client } = require("@notionhq/client")
 
 exports.handler = async function (event, context) {
-  const notionClient = new Client({ auth: process.env.NOTION_KEY });
+  const notionClient = new Client({ auth: process.env.NOTION_DAWN_KEY });
   const database = await notionClient.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID,
+    database_id: process.env.NOTION_DAWN_DATABASE_ID,
   });
   const posts = [];
 
