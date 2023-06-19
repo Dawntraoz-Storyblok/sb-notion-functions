@@ -14,22 +14,23 @@ exports.handler = async function (event, context) {
   }
   const podcastSeasons = notesProdPage.filter(block => block.callout);
 
-  let episodeNotes = {};
-  await podcastSeasons.map(async version => {
+  const episodeNotes = await podcastSeasons.reduce(async (acc, version) => {
     try {
       const episodeNotesByVersion = await notionClient.blocks.children.list({
         block_id: version.id,
         page_size: 50,
       });
-      console.log(episodeNotesByVersion);
-      episodeNotes[version.callout.rich_text] = episodeNotesByVersion.results.map(episode => ({
-        notion_id: episode.id,
-        title: episode.child_page.title
-      }));
+      return {
+        ...(await acc),
+        [version.callout.rich_text[0].plain_text.replaceAll(' ', '-').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')]: episodeNotesByVersion.results.map(episode => ({
+          notion_id: episode.id,
+          title: episode.child_page.title
+        }))
+      };
     } catch (error) {
       console.error(error);
     }
-  })
+  }, {});
 
   return {
     statusCode: 200,
