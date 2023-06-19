@@ -9,15 +9,13 @@ exports.handler = async function (event, context) {
       block_id: process.env.NOTION_NMDLV_ID,
       page_size: 50,
     })).results;
-    console.log(notesProdPage);
   } catch (error) {
     console.error(error);
   }
   const podcastSeasons = notesProdPage.filter(block => block.callout);
-  console.log(podcastSeasons);
 
   let episodeNotes = {};
-  podcastSeasons.map(async version => {
+  await podcastSeasons.map(async version => {
     try {
       const episodeNotesByVersion = await notionClient.blocks.children.list({
         block_id: version.id,
@@ -28,7 +26,6 @@ exports.handler = async function (event, context) {
         notion_id: episode.id,
         title: episode.child_page.title
       }));
-      console.log(episodeNotes);
     } catch (error) {
       console.error(error);
     }
